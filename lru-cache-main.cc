@@ -25,7 +25,7 @@ struct CACHECONFIG {
 }; 
 bool readArgv(CACHECONFIG &cc , int &argc ,char *argv[]);
 
-
+void LRUTypeFunction(void);
 
 
 
@@ -85,7 +85,13 @@ int main(int argc, char *argv[])
         std::cout << std::setw(19) << sz << " bytes | name=" << f << '\n';
 
         auto const ts1 = clock::now();
-        auto encoded = base64encode(f);
+        if(cc.enableCache){
+            LRUTypeFunction();
+        }
+            
+        else {
+            auto encoded = base64encode(f);
+        }
         auto const ts2 = clock::now();
         time_tot += std::chrono::duration<double>(ts2 - ts1).count();
 
@@ -136,4 +142,10 @@ bool readArgv(CACHECONFIG &cc , int &argc ,char *argv[])
         } 
     }
     return true;
+}
+
+
+void LRUTypeFunction(void)
+{
+
 }
