@@ -9,11 +9,11 @@
 
 
 
-
+//Här kanske man måste lägga till fler saker
 
 
 #include <string_view>
-#include <charconv>   // std::from_chars
+#include <charconv>   
 struct CACHECONFIG {
     int byteCapacity = 0;
     bool enableCache = false;
