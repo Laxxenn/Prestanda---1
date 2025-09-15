@@ -27,8 +27,23 @@ bool readArgv(CACHECONFIG &cc , int &argc ,char *argv[]);
 
 void LRUTypeFunction(void);
 
+#include <unordered_map>
+#include <list>
+
+class LRU_CACHE {
+    public: 
+        int capacity;
+        bool isFull;
+        std::unordered_map<> unmap;
+        std::list<> iteratorDLL;
+    public:
+        void get();
+        void insert();
+        void find();
+        void takeOut();
 
 
+};
 
 
 
