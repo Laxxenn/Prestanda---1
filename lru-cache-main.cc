@@ -66,8 +66,17 @@ int main(int argc, char *argv[])
     if(!readArgv(cc, argc, argv)){
         return 1;
     }
-    /*std::cout << "BytesCapacity =" << cc.byteCapacity << std::endl;
-    std::cout << "Enable cache FLAG = " << cc.ecFlag << std::endl;*/
+    
+    if(cc.ecFlag){
+        std::cout << "Program mode: LRU CACHE" << std::endl;
+        std::cout << "BytesCapacity =" << cc.byteCapacity << std::endl;
+        initializeLRU(cc.byteCapacity);
+    }
+    else{
+        std::cout << "Program mode: Normal" << std::endl;
+    }
+    
+   
     
     
     
@@ -80,18 +89,24 @@ int main(int argc, char *argv[])
     size_t esz_tot = 0;
     double time_tot = 0;
     for (auto &f : files) {
+        
+        
+        
         auto sz = fs::file_size(f);
         sz_tot += sz;
         std::cout << std::setw(19) << sz << " bytes | name=" << f << '\n';
-
         auto const ts1 = clock::now();
-        if(cc.enableCache){
-            LRUTypeFunction();
-        }
-            
-        else {
-            auto encoded = base64encode(f);
-        }
+        
+        
+        std::string encoded;
+        encoded = base64encode(f);    
+        
+        
+        
+        
+        
+        
+        
         auto const ts2 = clock::now();
         time_tot += std::chrono::duration<double>(ts2 - ts1).count();
 
@@ -146,6 +161,11 @@ bool readArgv(CACHECONFIG &cc , int &argc ,char *argv[])
 
 
 void LRUTypeFunction(void)
+{
+
+}
+
+void initializeLRU(int &capacity)
 {
 
 }
