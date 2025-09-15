@@ -27,23 +27,6 @@ bool readArgv(CACHECONFIG &cc , int &argc ,char *argv[]);
 
 void LRUTypeFunction(void);
 
-#include <unordered_map>
-#include <list>
-
-class LRU_CACHE {
-    public: 
-        int capacity;
-        bool isFull;
-        std::unordered_map<> unmap;
-        std::list<> iteratorDLL;
-    public:
-        void get();
-        void insert();
-        void find();
-        void takeOut();
-
-
-};
 
 
 
@@ -78,6 +61,7 @@ int main(int argc, char *argv[])
     //Set up CACHECONFIG and read argv 
 
     CACHECONFIG cc;
+    
     if(!readArgv(cc, argc, argv)){
         return 1;
     }
@@ -85,7 +69,8 @@ int main(int argc, char *argv[])
     if(cc.ecFlag){
         std::cout << "Program mode: LRU CACHE" << std::endl;
         std::cout << "BytesCapacity =" << cc.byteCapacity << std::endl;
-        initializeLRU(cc.byteCapacity);
+        
+        
     }
     else{
         std::cout << "Program mode: Normal" << std::endl;
@@ -103,6 +88,8 @@ int main(int argc, char *argv[])
     size_t sz_tot = 0;
     size_t esz_tot = 0;
     double time_tot = 0;
+    
+    
     for (auto &f : files) {
         
         
@@ -117,7 +104,7 @@ int main(int argc, char *argv[])
         encoded = base64encode(f);    
         
         
-        
+       
         
         
         
@@ -180,7 +167,3 @@ void LRUTypeFunction(void)
 
 }
 
-void initializeLRU(int &capacity)
-{
-
-}

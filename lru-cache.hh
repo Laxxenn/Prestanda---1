@@ -8,6 +8,59 @@ constexpr auto GIGABYTE = 1 << 30;
 std::string base64encode(std::filesystem::path const& filename);
 
 
+#include <unordered_map>
+#include <list>
+
+class LRU_CACHE 
+{
+    typedef std::pair<std::string, std::string> keyValPair;
+    public: 
+        int maxCapacity;
+        bool isFull;
+
+        std::list<keyValPair> cacheList;
+        std::unordered_map<std::string, std::list<keyValPair>::iterator> unMap;
+    public:
+        explicit LRU_CACHE(int &capacity) : maxCapacity(capacity){};
+        virtual ~LRU_CACHE() = default;       
+
+
+        std::string get(const std::string &key){
+            auto foundVal = unMap.find(key);
+            if(foundVal != unMap.end()){
+                return foundVal->second->second;
+            }
+            return nullptr;
+        }
+
+
+        void insert(std::string &key, std::string &value){
+        
+            auto foundVal = unMap.find(key);
+            if(foundVal != unMap.end()){
+                foundVal->second->second = value;
+                cacheList.splice(cacheList.begin(), cacheList, foundVal->second);
+            }
+            else {
+                if(cacheList.size() == maxCapacity){
+                    auto lastElement = cacheList.back();
+                    unMap.erase(lastElement.first);
+                    cacheList.pop_back();
+                }
+                cacheList.push_front(std::make_pair(key, value));
+                unMap.insert(std::make_pair(key,cacheList.begin()));
+            }
+            
+        }
+
+};
+
+
+
+
+
+
+
 
 /*
    Utökning av programmet:
