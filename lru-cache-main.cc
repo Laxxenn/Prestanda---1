@@ -7,25 +7,17 @@
 #include "lru-cache.hh"
 
 
-
-
-//Här kanske man måste lägga till fler saker
-
-
 #include <string_view>
 #include <charconv>   
-struct CACHECONFIG {
-    int byteCapacity = 0;
-    bool enableCache = false;
-
-    bool cacFlag = false;
-    bool ecFlag = false;
 
 
-}; 
+
 bool readArgv(CACHECONFIG &cc , int &argc ,char *argv[]);
 
-void LRUTypeFunction(void);
+LRU_CACHE lru{0};
+CACHECONFIG cc;
+
+
 
 
 
@@ -56,12 +48,6 @@ static std::string &truncate(std::string &s, size_t sz)
 int main(int argc, char *argv[])
 {
     
-    //Read commandline for 2 flags, -ec and -cac 
-
-    //Set up CACHECONFIG and read argv 
-
-    CACHECONFIG cc;
-    
     if(!readArgv(cc, argc, argv)){
         return 1;
     }
@@ -69,6 +55,7 @@ int main(int argc, char *argv[])
     if(cc.ecFlag){
         std::cout << "Program mode: LRU CACHE" << std::endl;
         std::cout << "BytesCapacity =" << cc.byteCapacity << std::endl;
+        lru.maxCapacity = cc.byteCapacity;
         
         
     }
@@ -92,22 +79,14 @@ int main(int argc, char *argv[])
     
     for (auto &f : files) {
         
-        
-        
         auto sz = fs::file_size(f);
         sz_tot += sz;
         std::cout << std::setw(19) << sz << " bytes | name=" << f << '\n';
         auto const ts1 = clock::now();
-        
-        
+                
         std::string encoded;
-        encoded = base64encode(f);    
-        
-        
-       
-        
-        
-        
+
+        encoded = base64encode(f);
         
         auto const ts2 = clock::now();
         time_tot += std::chrono::duration<double>(ts2 - ts1).count();
@@ -161,9 +140,4 @@ bool readArgv(CACHECONFIG &cc , int &argc ,char *argv[])
     return true;
 }
 
-
-void LRUTypeFunction(void)
-{
-
-}
 

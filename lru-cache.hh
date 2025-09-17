@@ -7,51 +7,74 @@ constexpr auto GIGABYTE = 1 << 30;
 
 std::string base64encode(std::filesystem::path const& filename);
 
+struct CACHECONFIG {
+    int byteCapacity = 0;
+    bool enableCache = false;
 
+    bool cacFlag = false;
+    bool ecFlag = false;
+
+
+}; 
 #include <unordered_map>
 #include <list>
 
+extern LRU_CACHE lru;
+extern CACHECONFIG cc;
+
 class LRU_CACHE 
 {
-    typedef std::pair<std::string, std::string> keyValPair;
-    public: 
-        int maxCapacity;
-        bool isFull;
-
-        std::list<keyValPair> cacheList;
-        std::unordered_map<std::string, std::list<keyValPair>::iterator> unMap;
-    public:
-        explicit LRU_CACHE(int &capacity) : maxCapacity(capacity){};
-        virtual ~LRU_CACHE() = default;       
+   using Key = std::filesystem::path;
+   using Value = std::string;
+   using Entry = std::pair<Key, Value>;
+   using Iter = std::list<Entry>::iterator;
 
 
-        std::string get(const std::string &key){
-            auto foundVal = unMap.find(key);
-            if(foundVal != unMap.end()){
-                return foundVal->second->second;
-            }
-            return nullptr;
+
+
+public:
+    int maxCapacity;
+    bool isFull;
+
+    std::list<Entry> cacheList;
+    std::unordered_map<Key, Iter> unMap;
+
+public:
+    explicit LRU_CACHE(int capacity) : maxCapacity(capacity), isFull(false){}
+    virtual ~LRU_CACHE() = default;
+
+
+
+    bool contains(const Key &key) const {
+        return unMap.find(key) != unMap.end();
+    }
+
+    std::string get(const Key &key) {
+        auto it = unMap.find(key);
+        if(it != unMap.end()){
+            return it->second->second;
         }
+        return "";
+    }
 
 
-        void insert(std::string &key, std::string &value){
+    void insert(const Key &key, const Value &value){
+        auto it = unMap.find(key);
+        if(it != unMap.end()){
+            it->second->second = value;
+            cacheList.splice(cacheList.begin(), cacheList, it->second);
+        } else {
+            if(maxCapacity > 0 && static_cast<int>(cacheList.size()) == maxCapacity){
+                const auto& last = cacheList.back();
+                unMap.erase(last.first);
+                cacheList.pop_back();
+            }
         
-            auto foundVal = unMap.find(key);
-            if(foundVal != unMap.end()){
-                foundVal->second->second = value;
-                cacheList.splice(cacheList.begin(), cacheList, foundVal->second);
-            }
-            else {
-                if(cacheList.size() == maxCapacity){
-                    auto lastElement = cacheList.back();
-                    unMap.erase(lastElement.first);
-                    cacheList.pop_back();
-                }
-                cacheList.push_front(std::make_pair(key, value));
-                unMap.insert(std::make_pair(key,cacheList.begin()));
-            }
-            
+            cacheList.emplace_front(key,value);
+            unMap[key] = cacheList.begin();
         }
+
+    }
 
 };
 

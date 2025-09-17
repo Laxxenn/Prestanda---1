@@ -3,6 +3,9 @@
 
 #include "lru-cache.hh"
 
+
+
+
 static char const LUT[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz"
@@ -75,8 +78,19 @@ static std::string base64encode(std::vector<std::byte> const& data)
 
 std::string base64encode(std::filesystem::path const& filename)
 {
+    
+    if(cc.enableCache && lru.contains(filename)){
+        return lru.get(filename);
+    }
+    
+    
     auto const data = read_binary_file(filename);
     auto encoded = base64encode(data);
+    
+    if(cc.enableCache){
+        lru.insert(filename,encoded);
+    }
+    
     return encoded;
 }
 
