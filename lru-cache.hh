@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <string>
+#include <iostream>
 
 constexpr auto GIGABYTE = 1 << 30;
 
@@ -19,66 +20,76 @@ struct CACHECONFIG {
 #include <unordered_map>
 #include <list>
 
-extern LRU_CACHE lru;
-extern CACHECONFIG cc;
 
-class LRU_CACHE 
+
+class LRU_CACHE
 {
-   using Key = std::filesystem::path;
-   using Value = std::string;
-   using Entry = std::pair<Key, Value>;
-   using Iter = std::list<Entry>::iterator;
-
-
-
+    using Key   = std::filesystem::path;
+    using Value = std::string;
+    using Entry = std::pair<Key, Value>;
+    using Iter  = std::list<Entry>::iterator;
 
 public:
-    int maxCapacity;
+    
+    std::size_t maxCapacity;      
+    std::size_t currentCapacity;  
     bool isFull;
 
-    std::list<Entry> cacheList;
+    std::list<Entry>              cacheList; 
     std::unordered_map<Key, Iter> unMap;
 
 public:
-    explicit LRU_CACHE(int capacity) : maxCapacity(capacity), isFull(false){}
-    virtual ~LRU_CACHE() = default;
+    explicit LRU_CACHE(std::size_t capacity)
+        : maxCapacity(capacity), currentCapacity(0), isFull(false) {}
+    ~LRU_CACHE() = default;
 
-
-
-    bool contains(const Key &key) const {
+    bool contains(const Key& key) const {
         return unMap.find(key) != unMap.end();
     }
 
-    std::string get(const Key &key) {
+    std::string get(const Key& key) {
         auto it = unMap.find(key);
-        if(it != unMap.end()){
+        if (it != unMap.end()) {
             return it->second->second;
         }
         return "";
     }
 
+    void insert(const Key& key, const Value& value) {
+        if (maxCapacity == 0) return;                 
 
-    void insert(const Key &key, const Value &value){
+        const std::size_t new_sz = value.size();
+
+        if (new_sz > maxCapacity) return;
+
         auto it = unMap.find(key);
-        if(it != unMap.end()){
+        if (it != unMap.end()) {
+            std::size_t old_sz = it->second->second.size();
+            if (new_sz >= old_sz) {
+                currentCapacity += (new_sz - old_sz);
+            } else {
+                currentCapacity -= (old_sz - new_sz);
+            }
             it->second->second = value;
             cacheList.splice(cacheList.begin(), cacheList, it->second);
         } else {
-            if(maxCapacity > 0 && static_cast<int>(cacheList.size()) == maxCapacity){
-                const auto& last = cacheList.back();
-                unMap.erase(last.first);
-                cacheList.pop_back();
-            }
-        
-            cacheList.emplace_front(key,value);
+            cacheList.emplace_front(key, value);
             unMap[key] = cacheList.begin();
+            currentCapacity += new_sz;
         }
 
+        while (currentCapacity > maxCapacity && !cacheList.empty()) {
+            const auto& last = cacheList.back();
+            currentCapacity -= last.second.size();
+            unMap.erase(last.first);
+            cacheList.pop_back();
+        }
+
+        isFull = (currentCapacity >= maxCapacity);
     }
-
 };
-
-
+extern LRU_CACHE lru;
+extern CACHECONFIG cc;
 
 
 

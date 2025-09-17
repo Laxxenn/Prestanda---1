@@ -1,4 +1,4 @@
-# --- config ---
+ # --- config ---
 CXX      ?= g++
 CXXFLAGS ?= -std=c++17 -O2 -march=native -Wall -Wextra -Wpedantic -MMD -MP
 LDFLAGS  ?=

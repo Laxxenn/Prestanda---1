@@ -88,6 +88,7 @@ std::string base64encode(std::filesystem::path const& filename)
     auto encoded = base64encode(data);
     
     if(cc.enableCache){
+        
         lru.insert(filename,encoded);
     }
     

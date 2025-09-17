@@ -17,12 +17,6 @@ bool readArgv(CACHECONFIG &cc , int &argc ,char *argv[]);
 LRU_CACHE lru{0};
 CACHECONFIG cc;
 
-
-
-
-
-
-
 namespace fs = std::filesystem;
 // list all regular files in specified directory (default: current directory)
 static std::vector<fs::path> files_in_directory(fs::path const& dirname = ".")
@@ -35,7 +29,7 @@ static std::vector<fs::path> files_in_directory(fs::path const& dirname = ".")
     }
     return files;
 }
-
+void formalTest(std::vector<std::filesystem::__cxx11::path> &files);
 static std::string &truncate(std::string &s, size_t sz)
 {
     if (s.size() > sz) { 
@@ -51,22 +45,10 @@ int main(int argc, char *argv[])
     if(!readArgv(cc, argc, argv)){
         return 1;
     }
-    
+
     if(cc.ecFlag){
-        std::cout << "Program mode: LRU CACHE" << std::endl;
-        std::cout << "BytesCapacity =" << cc.byteCapacity << std::endl;
-        lru.maxCapacity = cc.byteCapacity;
-        
-        
+        lru.maxCapacity = cc.byteCapacity;    
     }
-    else{
-        std::cout << "Program mode: Normal" << std::endl;
-    }
-    
-   
-    
-    
-    
     
     using clock = std::chrono::steady_clock;
     std::cout << std::fixed;
@@ -76,7 +58,13 @@ int main(int argc, char *argv[])
     size_t esz_tot = 0;
     double time_tot = 0;
     
-    
+    size_t formalTimeTot = 0;
+
+    auto const formalT1 = clock::now();
+    formalTest(files);
+    auto const formalT2 = clock::now();
+    formalTimeTot = std::chrono::duration<double>(formalT2- formalT1).count();
+    std::cout << "--------------------\n" << std::endl<< "Formal test time: "<< formalTimeTot << std::endl;
     for (auto &f : files) {
         
         auto sz = fs::file_size(f);
@@ -98,6 +86,15 @@ int main(int argc, char *argv[])
         std::cout << '\n';
     }
     auto const throughput = sz_tot / time_tot * 1e-6;
+    std::cout << "------------------------------" << std::endl;
+    std::cout << "Run info: " << std::endl; 
+    if(cc.enableCache){
+        std::cout << "Program mode: LRU CACHE" << std::endl;
+        std::cout << "BytesCapacity =" << cc.byteCapacity << std::endl;
+    }else{
+        std::cout << "Program mode: Normal" << std::endl;    
+    }
+    std::cout << "------------------------------" << std::endl;
     std::cout << "Statistics\n" << std::string(40, '-') << '\n';
     std::cout << files.size()   << " files encoded\n";
     std::cout << sz_tot         << " bytes of unencoded data\n";
@@ -116,7 +113,7 @@ bool readArgv(CACHECONFIG &cc , int &argc ,char *argv[])
             cc.ecFlag = true;
         }
         else if(arg == "-cac"){
-            if (i + i >= argc){
+            if (i + 1 >= argc){
                 std::cerr << "Error, integer must follow -cac flag. USAGE: -cac (integer)" << std::endl;
                 return false;
             }
@@ -141,3 +138,13 @@ bool readArgv(CACHECONFIG &cc , int &argc ,char *argv[])
 }
 
 
+void formalTest(std::vector<std::filesystem::__cxx11::path> &files)
+{
+    int iterations = 10;
+
+    for (int i = 1; i <= iterations; ++i){
+        for(auto &f : files ){
+            std::string encoded = base64encode(f);
+        }
+    }
+}
